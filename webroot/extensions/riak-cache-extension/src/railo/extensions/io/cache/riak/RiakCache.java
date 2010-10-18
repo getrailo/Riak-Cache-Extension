@@ -143,12 +143,24 @@ public class RiakCache implements Cache {
 
 	@Override
 	public void put(String key, Object value, Long idleTime, Long lifeSpan) {
+		Functions func = new Functions();
+		String val = "";
+		
 		long created = System.currentTimeMillis();
 		long idle = idleTime==null?0:idleTime.longValue();
 		long life = lifeSpan==null?0:lifeSpan.longValue();
 		
-		CFMLEngine engine = CFMLEngineFactory.getInstance();
-		Struct doc = engine.getCreationUtil().createStruct();
+		try{
+			val = func.serialize(value); 
+		}catch(PageException e){
+			e.printStackTrace();
+		}
+				
+		RiakDocument doc = new RiakDocument(key);
+		doc.setCreated(created);
+		doc.setLifeSpan(lifeSpan);
+		doc.setIdleItem(idleTime);
+		doc.setValue(val);
 		
 	}
 
@@ -186,6 +198,16 @@ public class RiakCache implements Cache {
 	public List values(CacheEntryFilter arg0) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	
+	/**
+	 * Private method to persist a RiakDocument instance
+	 * @param doc
+	 */
+	private void saveDocument(RiakDocument doc){
+		Functions func = new Functions();
+		
 	}
 
 }
