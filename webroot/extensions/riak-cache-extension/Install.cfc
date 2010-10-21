@@ -5,7 +5,7 @@
 		variables.id = "railo.extension.io.cache.riak.RiakCache";
 		variables.jar = "riak-cache.jar"
 		variables.driver = "RiakCache.cfc"
-		variables.jars = "#variables.jar#,riak-client.jar,riak-java-driver.txt";
+		variables.jars = "#variables.jar#,riak-client.jar,riak-java-client.txt";
 	</cfscript>
     
     <cffunction name="validate" returntype="void" output="no"

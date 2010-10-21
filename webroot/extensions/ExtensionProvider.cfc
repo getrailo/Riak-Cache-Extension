@@ -20,7 +20,7 @@
     	<cfargument name="apps" type="query" required="yes">
         
         <cfset var rootURL=getInfo().url & "/extensions/">
-        <cfset var zipFileLocation = 'ext/mongodb-cache.zip'>
+        <cfset var zipFileLocation = 'ext/riak-cache.zip'>
 		
 		<cffile action="read" file="zip://#expandPath(zipFileLocation)#!/config.xml" variable="config">
 		<cfset info = XMLParse(config)>

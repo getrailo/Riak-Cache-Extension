@@ -2,15 +2,15 @@
 <config>
 	<info>
 		<id>10EEC23A-0779-4068-9507A9C5ED4A8699</id>
-		<version>1.0.201009302006</version>
-		<name>MongoDBCache</name>
+		<version>0.1.201010212117</version>
+		<name>RiakCache</name>
 		<type>server</type>
-		<label>MongoDb Cache</label>
-		<description>MongoDb Cache Extension</description>
-		<created>2010-September-30 20:06</created> 
+		<label>Riak Cache</label>
+		<description>Riak Cache Extension</description>
+		<created>2010-October-21 21:17</created> 
 		<category>Core Extension</category>
 		<author>Andrea Campolonghi</author>
-		<image>http://preview.getrailo.org/logos/mongodb-logo.png</image>
+		<image>http://preview.getrailo.org/logos/riak-logo.png</image>
 	</info>
 </config>
 

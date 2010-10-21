@@ -1,0 +1,1 @@
+Riak-Java-Client v. 0.11.0

@@ -1,4 +1,4 @@
-package railo.extensions.io.cache.riak;
+package railo.extension.io.cache.riak;
 
 import railo.loader.engine.CFMLEngine;
 import railo.loader.engine.CFMLEngineFactory;
@@ -73,7 +73,7 @@ public class RiakDocument {
 	}
 	
 	/**
-	 * 
+	 * Return the setted lifespan
 	 * @param lifeSpan
 	 */
 	public void setLifeSpan(long lifeSpan) {
@@ -85,7 +85,7 @@ public class RiakDocument {
 	}
 	
 	/**
-	 * 
+	 * Return the setted idle time
 	 * @param idleTime
 	 */
 	public void setIdleItem(long idleTime) {
@@ -97,7 +97,7 @@ public class RiakDocument {
 	}
 
 	/**
-	 * 
+	 * Return the created date
 	 * @param created
 	 */
 	public void setCreated(long created) {
@@ -109,7 +109,7 @@ public class RiakDocument {
 	}
 	
 	/**
-	 * 
+	 * Return the value still serialized
 	 * @param value
 	 */
 	public void setValue(String value) {

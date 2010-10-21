@@ -1,4 +1,4 @@
-package railo.extensions.io.cache.riak;
+package railo.extension.io.cache.riak;
 
 import java.util.Date;
 
