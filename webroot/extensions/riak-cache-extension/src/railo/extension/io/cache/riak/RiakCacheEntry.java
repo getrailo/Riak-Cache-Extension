@@ -6,6 +6,12 @@ import railo.commons.io.cache.CacheEntry;
 import railo.runtime.type.Struct;
 
 public class RiakCacheEntry implements CacheEntry {
+	
+	private RiakDocument doc;
+	
+	public RiakCacheEntry(RiakDocument doc) {
+		this.doc = doc;
+	}
 
 	@Override
 	public Date created() {

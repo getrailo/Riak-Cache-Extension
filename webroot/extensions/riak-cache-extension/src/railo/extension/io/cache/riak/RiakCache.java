@@ -2,11 +2,14 @@ package railo.extension.io.cache.riak;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakObject;
+import com.basho.riak.client.response.FetchResponse;
+import com.basho.riak.client.response.RiakExceptionHandler;
+import com.basho.riak.client.response.RiakIORuntimeException;
+import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StoreResponse;
 
 import railo.commons.io.cache.Cache;
@@ -53,6 +56,21 @@ public class RiakCache implements Cache {
 		RiakConfig config = new RiakConfig(this.host);
 		this.rc = new RiakClient(config);
 		
+		this.rc.setExceptionHandler(new RiakExceptionHandler() {
+			
+			@Override
+			public void handle(RiakResponseRuntimeException arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void handle(RiakIORuntimeException arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
 	}
 	
 	@Override
@@ -80,8 +98,29 @@ public class RiakCache implements Cache {
 	}
 
 	@Override
-	public CacheEntry getCacheEntry(String arg0) throws IOException {
-		// TODO Auto-generated method stub
+	public CacheEntry getCacheEntry(String key) throws IOException {
+		CFMLEngine engine = CFMLEngineFactory.getInstance();
+		Cast caster = engine.getCastUtil();
+		Functions func = new Functions();
+
+		FetchResponse resp = this.rc.fetch(this.bucket, key);
+		
+		if(resp.isSuccess()){
+			
+			try{
+				
+				RiakObject ro = resp.getObject();
+				Struct data = caster.toStruct(func.deserializeJSON(ro.getValue()));
+				return new RiakCacheEntry(new RiakDocument(key,data)); 
+					
+			}catch(PageException e){
+				e.printStackTrace();
+			}
+			
+		}else{
+			throw(new IOException("Cache key [" + key + "] could not be fetched from the server. " + resp.getBodyAsString()));
+		}
+			
 		return null;
 	}
 

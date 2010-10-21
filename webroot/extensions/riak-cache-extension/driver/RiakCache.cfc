@@ -1,8 +1,8 @@
 <cfcomponent extends="Cache">
     <cfset fields=array(
 			field(	displayName="Server Host",
-					name="hosts",
-					defaultValue="localhost:27017",
+					name="host",
+					defaultValue="localhost:8098",
 					required=true,
 					description="Riak server host and port.",
 					type="textarea"
