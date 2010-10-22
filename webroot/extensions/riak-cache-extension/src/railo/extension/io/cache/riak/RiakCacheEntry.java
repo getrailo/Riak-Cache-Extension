@@ -33,8 +33,7 @@ public class RiakCacheEntry implements CacheEntry {
 
 	@Override
 	public Object getValue() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.doc.getValue();
 	}
 
 	@Override

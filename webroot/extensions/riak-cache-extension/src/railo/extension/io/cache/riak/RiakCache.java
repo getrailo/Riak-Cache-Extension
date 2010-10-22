@@ -1,11 +1,14 @@
 package railo.extension.io.cache.riak;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
+import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakObject;
+import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.RiakExceptionHandler;
 import com.basho.riak.client.response.RiakIORuntimeException;
@@ -19,6 +22,7 @@ import railo.commons.io.cache.CacheKeyFilter;
 import railo.extension.io.util.Functions;
 import railo.loader.engine.CFMLEngine;
 import railo.loader.engine.CFMLEngineFactory;
+import railo.runtime.config.Config;
 import railo.runtime.exp.PageException;
 import railo.runtime.type.Struct;
 import railo.runtime.util.Cast;
@@ -72,7 +76,19 @@ public class RiakCache implements Cache {
 		});
 		
 	}
+
+	public void init(Config config ,String[] cacheName,Struct[] arguments){
+		//Not used at the moment
+	}
 	
+	public void init(Config config, String cacheName, Struct arguments) {
+		try {
+		init(cacheName,arguments);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	@Override
 	public boolean contains(String arg0) {
 		// TODO Auto-generated method stub
@@ -103,7 +119,7 @@ public class RiakCache implements Cache {
 		Cast caster = engine.getCastUtil();
 		Functions func = new Functions();
 
-		FetchResponse resp = this.rc.fetch(this.bucket, key);
+		FetchResponse resp = this.rc.fetch(this.bucket, key.toLowerCase());
 		
 		if(resp.isSuccess()){
 			
@@ -125,7 +141,7 @@ public class RiakCache implements Cache {
 	}
 
 	@Override
-	public CacheEntry getCacheEntry(String arg0, CacheEntry arg1) {
+	public CacheEntry getCacheEntry(String key, CacheEntry arg1) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -137,15 +153,23 @@ public class RiakCache implements Cache {
 	}
 
 	@Override
-	public Object getValue(String arg0) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+	public Object getValue(String key) throws IOException {
+		Object value = getCacheEntry(key.toLowerCase()).getValue();
+		if(value == null){
+			throw(new IOException("Key [" + key + "] has not been found."));
+		}
+		return value;
 	}
 
 	@Override
-	public Object getValue(String arg0, Object arg1) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object getValue(String key, Object defaultValue) {
+		try{
+			this.hits++;
+			return getValue(key.toLowerCase());			
+		}catch (IOException e) {
+			this.misses++;
+			return defaultValue;
+		}
 	}
 
 	@Override
@@ -191,16 +215,21 @@ public class RiakCache implements Cache {
 			e.printStackTrace();
 		}
 				
-		RiakDocument doc = new RiakDocument(key);
+		RiakDocument doc = new RiakDocument(key.toLowerCase());
 		doc.setCreated(created);
 		doc.setLifeSpan(lifeSpan);
 		doc.setIdleItem(idleTime);
 		doc.setValue(val);
-		
+		try{
+			this.saveDocument(doc);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+				
 	}
 
 	@Override
-	public boolean remove(String arg0) {
+	public boolean remove(String key) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -247,7 +276,7 @@ public class RiakCache implements Cache {
 		try{
 			
 			String json = func.serializeJSON(data,false);
-			RiakObject ro = new RiakObject(json, doc.getKey());
+			RiakObject ro = new RiakObject(this.bucket, doc.getKey());
 			ro.setValue(json);
 			StoreResponse resp = this.rc.store(ro);
 			

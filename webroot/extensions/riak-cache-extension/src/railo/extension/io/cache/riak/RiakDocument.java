@@ -1,5 +1,6 @@
 package railo.extension.io.cache.riak;
 
+import railo.extension.io.util.Functions;
 import railo.loader.engine.CFMLEngine;
 import railo.loader.engine.CFMLEngineFactory;
 import railo.runtime.exp.PageException;
@@ -19,7 +20,7 @@ public class RiakDocument {
 		long now = System.currentTimeMillis();
 		CFMLEngine engine = CFMLEngineFactory.getInstance();
 
-		this.key = key;
+		this.key = key.toLowerCase();
 		this.data = engine.getCreationUtil().createStruct();
 		
 		try{	
@@ -118,6 +119,21 @@ public class RiakDocument {
 		}catch(PageException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * Return the cached object
+	 * @return
+	 */
+	public Object getValue() {
+		Functions func = new Functions();
+	
+		try{
+			return func.evaluate(this.data.get("value"));		
+		}catch (PageException e) {
+				e.printStackTrace();
+		}
+		return null;
 	}
 	
 }
