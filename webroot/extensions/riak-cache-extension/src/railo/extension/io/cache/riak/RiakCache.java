@@ -90,8 +90,11 @@ public class RiakCache implements Cache {
 	}
 
 	@Override
-	public boolean contains(String arg0) {
-		// TODO Auto-generated method stub
+	public boolean contains(String key) {
+		FetchResponse resp = this.rc.fetch(this.bucket, key.toLowerCase());
+		if(resp.isSuccess()){
+			return true;
+		}
 		return false;
 	}
 
@@ -230,7 +233,6 @@ public class RiakCache implements Cache {
 
 	@Override
 	public boolean remove(String key) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
