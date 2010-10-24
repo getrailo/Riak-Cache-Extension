@@ -1,7 +1,9 @@
 package railo.extension.io.cache.riak;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import com.basho.riak.client.RiakBucketInfo;
@@ -10,6 +12,7 @@ import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.FetchResponse;
+import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakExceptionHandler;
 import com.basho.riak.client.response.RiakIORuntimeException;
 import com.basho.riak.client.response.RiakResponseRuntimeException;
@@ -99,8 +102,7 @@ public class RiakCache implements Cache {
 	}
 
 	@Override
-	public List entries() {
-		// TODO Auto-generated method stub
+	public List entries() {		
 		return null;
 	}
 
@@ -182,19 +184,44 @@ public class RiakCache implements Cache {
 
 	@Override
 	public List keys() {
-		// TODO Auto-generated method stub
+		ArrayList<String> result = new ArrayList<String>();
+		BucketResponse r = this.rc.listBucket(this.bucket);
+		
+		if (r.isSuccess()) {    
+			RiakBucketInfo info = r.getBucketInfo();
+		    Collection<String> keys = info.getKeys();
+		    Iterator it = keys.iterator();
+		    while(it.hasNext()){
+		    	result.add((String) it.next());
+		    }
+		    return result;
+		}
 		return null;
 	}
 
 	@Override
-	public List keys(CacheKeyFilter arg0) {
-		// TODO Auto-generated method stub
+	public List keys(CacheKeyFilter filter) {
+		ArrayList<String> result = new ArrayList<String>();
+		BucketResponse r = this.rc.listBucket(this.bucket);
+		String key;
+		
+		if (r.isSuccess()) {    
+			RiakBucketInfo info = r.getBucketInfo();
+		    Collection<String> keys = info.getKeys();
+		    Iterator it = keys.iterator();
+		    while(it.hasNext()){
+		    	key = (String) it.next();
+		    	if(filter.accept(key)){
+		    		result.add(key);
+		    	}		    	
+		    }
+		    return result;
+		}
 		return null;
 	}
 
 	@Override
-	public List keys(CacheEntryFilter arg0) {
-		// TODO Auto-generated method stub
+	public List keys(CacheEntryFilter filter) {
 		return null;
 	}
 
@@ -233,17 +260,35 @@ public class RiakCache implements Cache {
 
 	@Override
 	public boolean remove(String key) {
+		HttpResponse resp = this.rc.delete(this.bucket, key);
+		if(resp.isSuccess()){
+			return true;
+		}
 		return false;
 	}
 
 	@Override
-	public int remove(CacheKeyFilter arg0) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int remove(CacheKeyFilter filter) {
+		BucketResponse r = this.rc.listBucket(this.bucket);
+		String key;
+		int counter =0;
+		
+		if (r.isSuccess()) {    
+			RiakBucketInfo info = r.getBucketInfo();
+		    Collection<String> keys = info.getKeys();
+		    Iterator it = keys.iterator();
+		    while(it.hasNext()){
+		    	key = (String) it.next();
+		    	if(filter.accept(key)){
+		    		if(remove(key)) counter++;
+		    	}		    	
+		    }
+		}		
+		return counter;
 	}
 
 	@Override
-	public int remove(CacheEntryFilter arg0) {
+	public int remove(CacheEntryFilter filter) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
@@ -255,13 +300,13 @@ public class RiakCache implements Cache {
 	}
 
 	@Override
-	public List values(CacheKeyFilter arg0) {
+	public List values(CacheKeyFilter filter) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List values(CacheEntryFilter arg0) {
+	public List values(CacheEntryFilter filter) {
 		// TODO Auto-generated method stub
 		return null;
 	}
