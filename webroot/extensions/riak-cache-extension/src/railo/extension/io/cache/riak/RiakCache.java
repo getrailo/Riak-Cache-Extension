@@ -6,17 +6,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import com.basho.riak.client.RiakBucketInfo;
-import com.basho.riak.client.RiakClient;
-import com.basho.riak.client.RiakConfig;
-import com.basho.riak.client.RiakObject;
-import com.basho.riak.client.response.BucketResponse;
-import com.basho.riak.client.response.FetchResponse;
-import com.basho.riak.client.response.HttpResponse;
-import com.basho.riak.client.response.RiakExceptionHandler;
-import com.basho.riak.client.response.RiakIORuntimeException;
-import com.basho.riak.client.response.RiakResponseRuntimeException;
-import com.basho.riak.client.response.StoreResponse;
+import com.trifork.riak.RiakClient;
+import com.trifork.riak.RiakObject;
 
 import railo.commons.io.cache.Cache;
 import railo.commons.io.cache.CacheEntry;
@@ -60,24 +51,8 @@ public class RiakCache implements Cache {
 		}
 		
 		
-		RiakConfig config = new RiakConfig(this.host);
-		this.rc = new RiakClient(config);
-		
-		this.rc.setExceptionHandler(new RiakExceptionHandler() {
-			
-			@Override
-			public void handle(RiakResponseRuntimeException arg0) {
-				// TODO Auto-generated method stub
+		this.rc = new RiakClient(this.host);
 				
-			}
-			
-			@Override
-			public void handle(RiakIORuntimeException arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
-		
 	}
 
 	public void init(Config config ,String[] cacheName,Struct[] arguments){
@@ -323,12 +298,11 @@ public class RiakCache implements Cache {
 		try{
 			
 			String json = func.serializeJSON(data,false);
-			RiakObject ro = new RiakObject(this.bucket, doc.getKey());
-			ro.setValue(json);
-			StoreResponse resp = this.rc.store(ro);
-			
-			if(!resp.isSuccess()){
-				throw(new IOException("Cache key [" + doc.getKey() + "] has not been saved. " + resp.getBodyAsString()));
+			RiakObject ro = new RiakObject(this.bucket, doc.getKey(),json);
+			try{
+				this.rc.store(ro);				
+			}catch(IOException e){
+				throw(new IOException("Cache key [" + doc.getKey() + "] has not been saved."));
 			}
 			
 		}catch(PageException e){
