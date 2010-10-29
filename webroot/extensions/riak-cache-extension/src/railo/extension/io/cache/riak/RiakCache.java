@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.protobuf.ByteString;
+import com.trifork.riak.KeySource;
 import com.trifork.riak.RiakClient;
 import com.trifork.riak.RiakObject;
 
@@ -52,6 +54,7 @@ public class RiakCache implements Cache {
 		
 		
 		this.rc = new RiakClient(this.host);
+		this.rc.setClientID(this.bucket);
 				
 	}
 
@@ -69,11 +72,12 @@ public class RiakCache implements Cache {
 
 	@Override
 	public boolean contains(String key) {
-		FetchResponse resp = this.rc.fetch(this.bucket, key.toLowerCase());
-		if(resp.isSuccess()){
+		try{
+			RiakObject[] ro = this.rc.fetch(this.bucket, key.toLowerCase());
 			return true;
+		}catch(IOException e){
+			return false;
 		}
-		return false;
 	}
 
 	@Override
@@ -99,24 +103,20 @@ public class RiakCache implements Cache {
 		Cast caster = engine.getCastUtil();
 		Functions func = new Functions();
 
-		FetchResponse resp = this.rc.fetch(this.bucket, key.toLowerCase());
-		
-		if(resp.isSuccess()){
-			
-			try{
-				
-				RiakObject ro = resp.getObject();
-				Struct data = caster.toStruct(func.deserializeJSON(ro.getValue()));
+		try{
+
+			RiakObject[] ros = this.rc.fetch(this.bucket, key.toLowerCase());
+			for(RiakObject ro : ros){
+				Struct data = caster.toStruct(func.deserializeJSON(ro.toString()));
 				return new RiakCacheEntry(new RiakDocument(key,data)); 
-					
-			}catch(PageException e){
-				e.printStackTrace();
-			}
-			
-		}else{
-			throw(new IOException("Cache key [" + key + "] could not be fetched from the server. " + resp.getBodyAsString()));
+			}	
+
+		}catch(IOException e){
+			throw(new IOException("Cache key [" + key + "] could not be fetched from the server"));
+		}catch(PageException e){
+			e.printStackTrace();
 		}
-			
+
 		return null;
 	}
 
@@ -160,7 +160,14 @@ public class RiakCache implements Cache {
 	@Override
 	public List keys() {
 		ArrayList<String> result = new ArrayList<String>();
-		BucketResponse r = this.rc.listBucket(this.bucket);
+
+		ByteString[] buckets = this.rc.listBuckets();
+		
+		for(ByteString bucket : buckets){
+			if(this.rc.getBucketProperties(bucket))
+		}
+		
+ 		KeySource keys = this.rc.listKeys(this.bucket);
 		
 		if (r.isSuccess()) {    
 			RiakBucketInfo info = r.getBucketInfo();
@@ -234,12 +241,13 @@ public class RiakCache implements Cache {
 	}
 
 	@Override
-	public boolean remove(String key) {
-		HttpResponse resp = this.rc.delete(this.bucket, key);
-		if(resp.isSuccess()){
-			return true;
+	public boolean remove(String key) {		
+		try{
+			this.rc.delete(this.bucket, key);
+		}catch(IOException e){
+			return false;
 		}
-		return false;
+		return true;
 	}
 
 	@Override
