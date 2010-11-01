@@ -45,7 +45,7 @@ public class RiakCache implements Cache {
 		
 		try{
 			
-			this.host = "http://" + caster.toString(args.get("host")) + "/riak";
+			this.host = caster.toString(args.get("host"));
 			this.bucket = caster.toString(args.get("bucket")); 
 				
 		}catch (PageException e) {
@@ -82,19 +82,57 @@ public class RiakCache implements Cache {
 
 	@Override
 	public List entries() {		
-		return null;
+		ArrayList<CacheEntry> result = new ArrayList<CacheEntry>();
+		ByteString bucket = ByteString.copyFromUtf8(this.bucket);
+		
+		try{
+		 	KeySource keys = this.rc.listKeys(bucket);			
+		 	while(keys.hasNext()){
+		 		result.add(getCacheEntry(keys.next().toStringUtf8()));
+		 	}		 	
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 	@Override
-	public List entries(CacheKeyFilter arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public List entries(CacheKeyFilter filter) {
+		ArrayList<CacheEntry> result = new ArrayList<CacheEntry>();
+		ByteString bucket = ByteString.copyFromUtf8(this.bucket);
+		
+		try{
+		 	KeySource keys = this.rc.listKeys(bucket);			
+		 	while(keys.hasNext()){
+		 		String key = keys.next().toStringUtf8();
+		 		if(filter.accept(key)){
+			 		result.add(getCacheEntry(key));		 			
+		 		}
+		 	}		 	
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 	@Override
-	public List entries(CacheEntryFilter arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public List entries(CacheEntryFilter filter) {
+		ArrayList<CacheEntry> result = new ArrayList<CacheEntry>();
+		ByteString bucket = ByteString.copyFromUtf8(this.bucket);
+		
+		try{
+		 	KeySource keys = this.rc.listKeys(bucket);			
+		 	while(keys.hasNext()){
+		 		String key = keys.next().toStringUtf8();
+		 		CacheEntry entry = getCacheEntry(key);
+		 		if(filter.accept(entry)){
+			 		result.add(entry);		 			
+		 		}
+		 	}		 	
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 	@Override
@@ -121,9 +159,12 @@ public class RiakCache implements Cache {
 	}
 
 	@Override
-	public CacheEntry getCacheEntry(String key, CacheEntry arg1) {
-		// TODO Auto-generated method stub
-		return null;
+	public CacheEntry getCacheEntry(String key, CacheEntry defaultValue) {
+		try{
+			return getCacheEntry(key);
+		}catch(IOException e){
+			return defaultValue;
+		}		
 	}
 
 	@Override
@@ -160,51 +201,56 @@ public class RiakCache implements Cache {
 	@Override
 	public List keys() {
 		ArrayList<String> result = new ArrayList<String>();
-
-		ByteString[] buckets = this.rc.listBuckets();
+		ByteString bucket = ByteString.copyFromUtf8(this.bucket);
 		
-		for(ByteString bucket : buckets){
-			if(this.rc.getBucketProperties(bucket))
+		try{
+		 	KeySource keys = this.rc.listKeys(bucket);			
+		 	while(keys.hasNext()){
+		 		result.add(keys.next().toStringUtf8());
+		 	}		 	
+		}catch(IOException e){
+			e.printStackTrace();
 		}
-		
- 		KeySource keys = this.rc.listKeys(this.bucket);
-		
-		if (r.isSuccess()) {    
-			RiakBucketInfo info = r.getBucketInfo();
-		    Collection<String> keys = info.getKeys();
-		    Iterator it = keys.iterator();
-		    while(it.hasNext()){
-		    	result.add((String) it.next());
-		    }
-		    return result;
-		}
-		return null;
+		return result;
 	}
 
 	@Override
 	public List keys(CacheKeyFilter filter) {
 		ArrayList<String> result = new ArrayList<String>();
-		BucketResponse r = this.rc.listBucket(this.bucket);
-		String key;
+		ByteString bucket = ByteString.copyFromUtf8(this.bucket);
 		
-		if (r.isSuccess()) {    
-			RiakBucketInfo info = r.getBucketInfo();
-		    Collection<String> keys = info.getKeys();
-		    Iterator it = keys.iterator();
-		    while(it.hasNext()){
-		    	key = (String) it.next();
-		    	if(filter.accept(key)){
-		    		result.add(key);
-		    	}		    	
-		    }
-		    return result;
+		try{
+		 	KeySource keys = this.rc.listKeys(bucket);			
+		 	while(keys.hasNext()){
+		 		String key = keys.next().toStringUtf8();
+		 		if(filter.accept(key)){
+			 		result.add(key);		 			
+		 		}
+		 	}		 	
+		}catch(IOException e){
+			e.printStackTrace();
 		}
-		return null;
+		return result;
 	}
 
 	@Override
 	public List keys(CacheEntryFilter filter) {
-		return null;
+		ArrayList<String> result = new ArrayList<String>();
+		ByteString bucket = ByteString.copyFromUtf8(this.bucket);
+		
+		try{
+		 	KeySource keys = this.rc.listKeys(bucket);			
+		 	while(keys.hasNext()){
+		 		String key = keys.next().toStringUtf8();
+		 		CacheEntry entry = getCacheEntry(key);
+		 		if(filter.accept(entry)){
+			 		result.add(key);		 			
+		 		}
+		 	}		 	
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 	@Override
@@ -252,28 +298,49 @@ public class RiakCache implements Cache {
 
 	@Override
 	public int remove(CacheKeyFilter filter) {
-		BucketResponse r = this.rc.listBucket(this.bucket);
-		String key;
 		int counter =0;
+		ByteString bucket = ByteString.copyFromUtf8(this.bucket);
 		
-		if (r.isSuccess()) {    
-			RiakBucketInfo info = r.getBucketInfo();
-		    Collection<String> keys = info.getKeys();
-		    Iterator it = keys.iterator();
-		    while(it.hasNext()){
-		    	key = (String) it.next();
-		    	if(filter.accept(key)){
-		    		if(remove(key)) counter++;
-		    	}		    	
-		    }
-		}		
+		try{
+		 	KeySource keys = this.rc.listKeys(bucket);			
+		 	while(keys.hasNext()){
+		 		String key = keys.next().toStringUtf8();
+		 		if(filter.accept(key)){
+		 			Boolean res = remove(key);
+		 			if(res){
+		 				counter++;
+		 			}
+		 		}
+		 	}		 	
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+
 		return counter;
 	}
 
 	@Override
 	public int remove(CacheEntryFilter filter) {
-		// TODO Auto-generated method stub
-		return 0;
+		int counter =0;
+		ByteString bucket = ByteString.copyFromUtf8(this.bucket);
+		
+		try{
+		 	KeySource keys = this.rc.listKeys(bucket);			
+		 	while(keys.hasNext()){
+		 		String key = keys.next().toStringUtf8();
+		 		CacheEntry entry = getCacheEntry(key);
+		 		if(filter.accept(entry)){
+		 			Boolean res = remove(key);
+		 			if(res){
+		 				counter++;
+		 			}
+		 		}
+		 	}		 	
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+
+		return counter;
 	}
 
 	@Override
