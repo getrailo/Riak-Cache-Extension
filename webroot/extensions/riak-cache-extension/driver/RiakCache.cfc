@@ -2,10 +2,17 @@
     <cfset fields=array(
 			field(	displayName="Server Host",
 					name="host",
-					defaultValue="localhost:8098",
+					defaultValue="localhost",
 					required=true,
-					description="Riak server host and port.",
-					type="textarea"
+					description="Riak server host",
+					type="text"
+				),
+			field(	displayName="Server Port",
+					name="port",
+					defaultValue="8098",
+					required=true,
+					description="Riak server port.",
+					type="text"
 				),
 			field(	displayName="Bucket",
 					name="bucket",

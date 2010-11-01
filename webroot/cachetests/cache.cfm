@@ -11,7 +11,6 @@
 	
 <cfset server.enableCache=true>
 
-
 <cfcache action="put" id="susi" value="Susanne">
 <cfcache action="put" id="peter" value="Peter">
 <cf_valueEquals left="#cacheGet('susi')#" right="Susanne">

@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.google.protobuf.ByteString;
 import com.trifork.riak.KeySource;
 import com.trifork.riak.RiakClient;
@@ -27,6 +29,7 @@ public class RiakCache implements Cache {
 	
 	private String cacheName;
 	private String host;
+	private int port;
 	private RiakClient rc;
 	private String bucket;
 	private Functions func = new Functions();
@@ -35,6 +38,7 @@ public class RiakCache implements Cache {
 	private int hits = 0;
 	private int misses = 0;
 	
+	private Logger log = Logger.getLogger(RiakCache.class);
 	
 	@Override
 	public void init(String cacheName, Struct args) throws IOException {
@@ -46,6 +50,7 @@ public class RiakCache implements Cache {
 		try{
 			
 			this.host = caster.toString(args.get("host"));
+			this.port = caster.toInteger(args.get("port"));
 			this.bucket = caster.toString(args.get("bucket")); 
 				
 		}catch (PageException e) {
@@ -53,7 +58,7 @@ public class RiakCache implements Cache {
 		}
 		
 		
-		this.rc = new RiakClient(this.host);
+		this.rc = new RiakClient(this.host,this.port);
 		this.rc.setClientID(this.bucket);
 				
 	}
@@ -150,7 +155,9 @@ public class RiakCache implements Cache {
 			}	
 
 		}catch(IOException e){
-			throw(new IOException("Cache key [" + key + "] could not be fetched from the server"));
+			String msg = "Cache key [" + key + "] could not be fetched from the server";
+			log.error(msg);
+			throw(new IOException(msg));
 		}catch(PageException e){
 			e.printStackTrace();
 		}
@@ -414,12 +421,11 @@ public class RiakCache implements Cache {
 			
 			String json = func.serializeJSON(data,false);
 			RiakObject ro = new RiakObject(this.bucket, doc.getKey(),json);
-			try{
-				this.rc.store(ro);				
-			}catch(IOException e){
-				throw(new IOException("Cache key [" + doc.getKey() + "] has not been saved."));
-			}
+			this.rc.store(ro);				
 			
+		}catch(IOException e){
+			log.error("Cache key [" + doc.getKey() + "] has not been saved.");
+			throw(new IOException("Riak: Cache key [" + doc.getKey() + "] has not been saved."));
 		}catch(PageException e){
 			e.printStackTrace();
 		}
