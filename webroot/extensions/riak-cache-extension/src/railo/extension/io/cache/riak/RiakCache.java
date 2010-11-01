@@ -345,20 +345,60 @@ public class RiakCache implements Cache {
 
 	@Override
 	public List values() {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<Object> result = new ArrayList<Object>();
+		ByteString bucket = ByteString.copyFromUtf8(this.bucket);
+		
+		try{
+		 	KeySource keys = this.rc.listKeys(bucket);			
+		 	while(keys.hasNext()){
+		 		String key = keys.next().toStringUtf8();
+		 		CacheEntry entry = getCacheEntry(key);
+		 		result.add(entry.getValue());
+		 	}		 	
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 	@Override
 	public List values(CacheKeyFilter filter) {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<Object> result = new ArrayList<Object>();
+		ByteString bucket = ByteString.copyFromUtf8(this.bucket);
+		
+		try{
+		 	KeySource keys = this.rc.listKeys(bucket);			
+		 	while(keys.hasNext()){
+		 		String key = keys.next().toStringUtf8();
+		 		if(filter.accept(key)){
+			 		CacheEntry entry = getCacheEntry(key);
+			 		result.add(entry.getValue());		 			
+		 		}
+		 	}		 	
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 	@Override
 	public List values(CacheEntryFilter filter) {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<Object> result = new ArrayList<Object>();
+		ByteString bucket = ByteString.copyFromUtf8(this.bucket);
+		
+		try{
+		 	KeySource keys = this.rc.listKeys(bucket);			
+		 	while(keys.hasNext()){
+		 		String key = keys.next().toStringUtf8();
+		 		CacheEntry entry = getCacheEntry(key);
+		 		if(filter.accept(entry)){
+			 		result.add(entry.getValue());		 			
+		 		}
+		 	}		 	
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		return result;
 	}
 	
 	
