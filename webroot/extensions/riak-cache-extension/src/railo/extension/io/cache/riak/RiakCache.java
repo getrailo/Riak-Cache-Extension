@@ -150,7 +150,7 @@ public class RiakCache implements Cache {
 
 			RiakObject[] ros = this.rc.fetch(this.bucket, key.toLowerCase());
 			for(RiakObject ro : ros){
-				Struct data = caster.toStruct(func.deserializeJSON(ro.toString()));
+				Struct data = caster.toStruct(func.deserializeJSON(ro.getValue().toStringUtf8()));
 				return new RiakCacheEntry(new RiakDocument(key,data)); 
 			}	
 
