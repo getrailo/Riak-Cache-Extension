@@ -3,6 +3,9 @@ package railo.extension.io.cache.riak;
 import java.util.Date;
 
 import railo.commons.io.cache.CacheEntry;
+import railo.loader.engine.CFMLEngine;
+import railo.loader.engine.CFMLEngineFactory;
+import railo.runtime.exp.PageException;
 import railo.runtime.type.Struct;
 
 public class RiakCacheEntry implements CacheEntry {
@@ -15,20 +18,25 @@ public class RiakCacheEntry implements CacheEntry {
 
 	@Override
 	public Date created() {
-		// TODO Auto-generated method stub
-		return null;
+		try{
+			Date created = new Date(new Long(this.doc.getData().get("created").toString()));	
+			return created;
+		}catch(PageException e){
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override
 	public Struct getCustomInfo() {
-		// TODO Auto-generated method stub
-		return null;
+		CFMLEngine engine = CFMLEngineFactory.getInstance();
+		Struct str = engine.getCreationUtil().createStruct();
+		return str;
 	}
 
 	@Override
 	public String getKey() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.doc.getKey();
 	}
 
 	@Override
@@ -38,32 +46,53 @@ public class RiakCacheEntry implements CacheEntry {
 
 	@Override
 	public int hitCount() {
-		// TODO Auto-generated method stub
-		return 0;
+		try {
+			int hits = Integer.parseInt(this.doc.getData().get("hits").toString());
+			return hits;
+		} catch (PageException e) {
+			e.printStackTrace();
+			return 0;
+		}
 	}
 
 	@Override
 	public long idleTimeSpan() {
-		// TODO Auto-generated method stub
-		return 0;
+		Long timeidle = System.currentTimeMillis();
+		try{
+			timeidle = new Long(this.doc.getData().get("timeIdle").toString());	
+			
+		}catch(PageException e){
+			e.printStackTrace();
+		}
+		return timeidle;
 	}
 
 	@Override
 	public Date lastHit() {
-		// TODO Auto-generated method stub
-		return null;
+		return lastModified();	
 	}
 
 	@Override
 	public Date lastModified() {
-		// TODO Auto-generated method stub
-		return null;
+		try{
+			Date lastModified = new Date(new Long(this.doc.getData().get("lastModified").toString()));	
+			return lastModified;
+		}catch(PageException e){
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override
 	public long liveTimeSpan() {
-		// TODO Auto-generated method stub
-		return 0;
+		Long expires = System.currentTimeMillis();
+		try{
+			expires = new Long(this.doc.getData().get("expires").toString());	
+			
+		}catch(PageException e){
+			e.printStackTrace();
+		}
+		return expires;
 	}
 
 	@Override

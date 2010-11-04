@@ -270,7 +270,7 @@ public class RiakCache implements Cache {
 		Functions func = new Functions();
 		String val = "";
 		
-		long created = System.currentTimeMillis();
+		long now = System.currentTimeMillis();
 		long idle = idleTime==null?0:idleTime.longValue();
 		long life = lifeSpan==null?0:lifeSpan.longValue();
 		
@@ -281,9 +281,11 @@ public class RiakCache implements Cache {
 		}
 				
 		RiakDocument doc = new RiakDocument(key.toLowerCase());
-		doc.setCreated(created);
+		doc.setCreated(now);
 		doc.setLifeSpan(lifeSpan);
 		doc.setIdleItem(idleTime);
+		doc.setLastModified(now);
+		doc.setExpires(now + lifeSpan);
 		doc.setValue(val);
 		try{
 			this.saveDocument(doc);

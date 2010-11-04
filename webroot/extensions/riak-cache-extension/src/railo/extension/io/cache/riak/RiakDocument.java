@@ -28,6 +28,8 @@ public class RiakDocument {
 			this.data.set("timeIdle",0);
 			this.data.set("created",now);
 			this.data.set("hits",0);
+			this.data.set("lastModified",now);
+			this.data.set("expires",0);
 			this.data.set("value",null);
 		}catch(PageException e){			
 			e.printStackTrace();
@@ -74,7 +76,7 @@ public class RiakDocument {
 	}
 	
 	/**
-	 * Return the setted lifespan
+	 * Set the lifespan
 	 * @param lifeSpan
 	 */
 	public void setLifeSpan(long lifeSpan) {
@@ -86,7 +88,7 @@ public class RiakDocument {
 	}
 	
 	/**
-	 * Return the setted idle time
+	 * Set the idle time
 	 * @param idleTime
 	 */
 	public void setIdleItem(long idleTime) {
@@ -98,7 +100,7 @@ public class RiakDocument {
 	}
 
 	/**
-	 * Return the created date
+	 * Set the created date
 	 * @param created
 	 */
 	public void setCreated(long created) {
@@ -110,7 +112,31 @@ public class RiakDocument {
 	}
 	
 	/**
-	 * Return the value still serialized
+	 * Set the last modified value
+	 * @param lastModified
+	 */
+	public void setLastModified(long lastModified) {
+		try{
+			this.data.set("lastModified", lastModified);			
+		}catch(PageException e){
+			e.printStackTrace();
+		}		
+	}
+
+	/**
+	 * Set the expires value
+	 * @param expires
+	 */
+	public void setExpires(long expires) {
+		try{
+			this.data.set("exprires", expires);			
+		}catch(PageException e){
+			e.printStackTrace();
+		}				
+	}
+	
+	/**
+	 * Set the value still serialized
 	 * @param value
 	 */
 	public void setValue(String value) {
@@ -122,7 +148,7 @@ public class RiakDocument {
 	}
 	
 	/**
-	 * Return the cached object
+	 * Return the cached object after being evaluated
 	 * @return
 	 */
 	public Object getValue() {
