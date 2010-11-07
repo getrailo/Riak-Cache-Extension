@@ -60,7 +60,9 @@ public class RiakCache implements Cache {
 		
 		this.rc = new RiakClient(this.host,this.port);
 		this.rc.setClientID(this.bucket);
-				
+		
+		log.info("Riak Cache Connector : Cache id [" + this.cacheName + "] initialized.");
+		
 	}
 
 	public void init(Config config ,String[] cacheName,Struct[] arguments){
@@ -149,6 +151,13 @@ public class RiakCache implements Cache {
 		try{
 
 			RiakObject[] ros = this.rc.fetch(this.bucket, key.toLowerCase());
+			
+			if(ros.length == 0){
+				String msg = "Cache key [" + key + "] could not be fetched from the server";
+				log.error(msg);
+				throw(new IOException(msg));				
+			}
+			
 			for(RiakObject ro : ros){
 				Struct data = caster.toStruct(func.deserializeJSON(ro.getValue().toStringUtf8()));
 				return new RiakCacheEntry(new RiakDocument(key,data)); 
@@ -182,9 +191,12 @@ public class RiakCache implements Cache {
 
 	@Override
 	public Object getValue(String key) throws IOException {
-		Object value = getCacheEntry(key.toLowerCase()).getValue();
-		if(value == null){
-			throw(new IOException("Key [" + key + "] has not been found."));
+		Object value;
+		try{
+			value = getCacheEntry(key.toLowerCase()).getValue();			
+		}
+		catch(IOException e){
+			return null;
 		}
 		return value;
 	}
@@ -282,10 +294,10 @@ public class RiakCache implements Cache {
 				
 		RiakDocument doc = new RiakDocument(key.toLowerCase());
 		doc.setCreated(now);
-		doc.setLifeSpan(lifeSpan);
-		doc.setIdleItem(idleTime);
+		doc.setLifeSpan(life);
+		doc.setIdleItem(idle);
 		doc.setLastModified(now);
-		doc.setExpires(now + lifeSpan);
+		doc.setExpires(now + life);
 		doc.setValue(val);
 		try{
 			this.saveDocument(doc);

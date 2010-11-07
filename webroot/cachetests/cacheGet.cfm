@@ -1,6 +1,6 @@
 <cflock scope="server" timeout="1">
 <cfset cacheName="RiakCache">
-	<cfset cacheRemove(arrayToList(cacheGetAllIds()))>
+<cfset cacheRemove(arrayToList(cacheGetAllIds()))>
 <cfset cachePut('abc','123')>
 
 <cf_valueEquals left="#cacheGet('abc')#" right="123">

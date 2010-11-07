@@ -2,6 +2,7 @@
 <cflock scope="server" timeout="1">
 <cfset cacheName="RiakCache">
 <cfset cacheClear()>
+
 	<cfset cachePut('abc','123')>
     <cf_valueEquals left="#cacheCount()#" right="1">
     <cfset cacheClear()>

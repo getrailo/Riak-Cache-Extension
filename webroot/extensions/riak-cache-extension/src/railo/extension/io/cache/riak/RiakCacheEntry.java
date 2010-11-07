@@ -7,6 +7,7 @@ import railo.loader.engine.CFMLEngine;
 import railo.loader.engine.CFMLEngineFactory;
 import railo.runtime.exp.PageException;
 import railo.runtime.type.Struct;
+import railo.runtime.util.Cast;
 
 public class RiakCacheEntry implements CacheEntry {
 	
@@ -19,7 +20,9 @@ public class RiakCacheEntry implements CacheEntry {
 	@Override
 	public Date created() {
 		try{
-			Date created = new Date(new Long(this.doc.getData().get("created").toString()));	
+			CFMLEngine engine = CFMLEngineFactory.getInstance();
+			Cast caster = engine.getCastUtil();
+			Date created = new Date(caster.toLongValue((this.doc.getData().get("created"))));	
 			return created;
 		}catch(PageException e){
 			e.printStackTrace();
@@ -46,8 +49,10 @@ public class RiakCacheEntry implements CacheEntry {
 
 	@Override
 	public int hitCount() {
+		CFMLEngine engine = CFMLEngineFactory.getInstance();
+		Cast caster = engine.getCastUtil();
 		try {
-			int hits = Integer.parseInt(this.doc.getData().get("hits").toString());
+			int hits = caster.toIntValue(this.doc.getData().get("hits"));
 			return hits;
 		} catch (PageException e) {
 			e.printStackTrace();
@@ -57,10 +62,11 @@ public class RiakCacheEntry implements CacheEntry {
 
 	@Override
 	public long idleTimeSpan() {
+		CFMLEngine engine = CFMLEngineFactory.getInstance();
+		Cast caster = engine.getCastUtil();
 		Long timeidle = System.currentTimeMillis();
 		try{
-			timeidle = new Long(this.doc.getData().get("timeIdle").toString());	
-			
+			timeidle = caster.toLongValue(this.doc.getData().get("timeIdle"));				
 		}catch(PageException e){
 			e.printStackTrace();
 		}
@@ -74,8 +80,10 @@ public class RiakCacheEntry implements CacheEntry {
 
 	@Override
 	public Date lastModified() {
+		CFMLEngine engine = CFMLEngineFactory.getInstance();
+		Cast caster = engine.getCastUtil();
 		try{
-			Date lastModified = new Date(new Long(this.doc.getData().get("lastModified").toString()));	
+			Date lastModified = new Date(caster.toLongValue((this.doc.getData().get("lastModified"))));	
 			return lastModified;
 		}catch(PageException e){
 			e.printStackTrace();
@@ -87,7 +95,7 @@ public class RiakCacheEntry implements CacheEntry {
 	public long liveTimeSpan() {
 		Long expires = System.currentTimeMillis();
 		try{
-			expires = new Long(this.doc.getData().get("expires").toString());	
+			expires = new Long((String)this.doc.getData().get("expires"));	
 			
 		}catch(PageException e){
 			e.printStackTrace();
