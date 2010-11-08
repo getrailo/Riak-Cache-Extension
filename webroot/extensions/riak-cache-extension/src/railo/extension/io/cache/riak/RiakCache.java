@@ -2,11 +2,13 @@ package railo.extension.io.cache.riak;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import com.google.protobuf.ByteString;
 import com.trifork.riak.KeySource;
@@ -38,7 +40,7 @@ public class RiakCache implements Cache {
 	private int hits = 0;
 	private int misses = 0;
 	
-	private Logger log = Logger.getLogger(RiakCache.class);
+	static Logger logger = Logger.getLogger(RiakCache.class);
 	
 	@Override
 	public void init(String cacheName, Struct args) throws IOException {
@@ -61,7 +63,14 @@ public class RiakCache implements Cache {
 		this.rc = new RiakClient(this.host,this.port);
 		this.rc.setClientID(this.bucket);
 		
-		log.info("Riak Cache Connector : Cache id [" + this.cacheName + "] initialized.");
+		Properties props = new Properties();
+		props.setProperty("log4j.rootLogger","INFO,A1");
+		props.setProperty("log4j.appender.A1","org.apache.log4j.ConsoleAppender");
+		props.setProperty("log4j.appender.A1.layout","org.apache.log4j.PatternLayout");
+		props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %d %C{1} - %m%n");				
+		PropertyConfigurator.configure(props);
+		
+		logger.info("Cache id [" + this.cacheName + "] initialized.");
 		
 	}
 
@@ -154,7 +163,7 @@ public class RiakCache implements Cache {
 			
 			if(ros.length == 0){
 				String msg = "Cache key [" + key + "] could not be fetched from the server";
-				log.error(msg);
+				logger.error(msg);
 				throw(new IOException(msg));				
 			}
 			
@@ -165,7 +174,7 @@ public class RiakCache implements Cache {
 
 		}catch(IOException e){
 			String msg = "Cache key [" + key + "] could not be fetched from the server";
-			log.error(msg);
+			logger.error(msg);
 			throw(new IOException(msg));
 		}catch(PageException e){
 			e.printStackTrace();
@@ -438,7 +447,7 @@ public class RiakCache implements Cache {
 			this.rc.store(ro);				
 			
 		}catch(IOException e){
-			log.error("Cache key [" + doc.getKey() + "] has not been saved.");
+			logger.error("Cache key [" + doc.getKey() + "] has not been saved.");
 			throw(new IOException("Riak: Cache key [" + doc.getKey() + "] has not been saved."));
 		}catch(PageException e){
 			e.printStackTrace();

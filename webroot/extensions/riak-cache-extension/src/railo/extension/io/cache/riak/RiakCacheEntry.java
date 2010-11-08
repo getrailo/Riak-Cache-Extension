@@ -93,9 +93,11 @@ public class RiakCacheEntry implements CacheEntry {
 
 	@Override
 	public long liveTimeSpan() {
+		CFMLEngine engine = CFMLEngineFactory.getInstance();
+		Cast caster = engine.getCastUtil();
 		Long expires = System.currentTimeMillis();
 		try{
-			expires = new Long((String)this.doc.getData().get("expires"));	
+			expires = caster.toLongValue(this.doc.getData().get("expires"));		
 			
 		}catch(PageException e){
 			e.printStackTrace();
