@@ -28,7 +28,7 @@ public class RiakDocument {
 			this.data.set("timeIdle",0);
 			this.data.set("created",now);
 			this.data.set("hits",0);
-			this.data.set("lastModified",now);
+			this.data.set("lastHit",now);
 			this.data.set("expires",0);
 			this.data.set("value",null);
 		}catch(PageException e){			
@@ -115,9 +115,9 @@ public class RiakDocument {
 	 * Set the last modified value
 	 * @param lastModified
 	 */
-	public void setLastModified(long lastModified) {
+	public void setLastHit(long lastHit) {
 		try{
-			this.data.set("lastModified", lastModified);			
+			this.data.set("lastHit", lastHit);			
 		}catch(PageException e){
 			e.printStackTrace();
 		}		

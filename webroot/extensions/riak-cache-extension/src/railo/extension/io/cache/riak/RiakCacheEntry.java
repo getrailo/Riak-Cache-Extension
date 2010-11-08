@@ -83,7 +83,7 @@ public class RiakCacheEntry implements CacheEntry {
 		CFMLEngine engine = CFMLEngineFactory.getInstance();
 		Cast caster = engine.getCastUtil();
 		try{
-			Date lastModified = new Date(caster.toLongValue((this.doc.getData().get("lastModified"))));	
+			Date lastModified = new Date(caster.toLongValue((this.doc.getData().get("lastHit"))));	
 			return lastModified;
 		}catch(PageException e){
 			e.printStackTrace();

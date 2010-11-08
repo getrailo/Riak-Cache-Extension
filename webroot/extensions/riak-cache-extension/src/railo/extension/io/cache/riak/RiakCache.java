@@ -169,7 +169,12 @@ public class RiakCache implements Cache {
 			
 			for(RiakObject ro : ros){
 				Struct data = caster.toStruct(func.deserializeJSON(ro.getValue().toStringUtf8()));
-				return new RiakCacheEntry(new RiakDocument(key,data)); 
+				RiakDocument doc = new RiakDocument(key,data);
+				//update the last hit
+				doc.setLastHit(caster.toLongValue(System.currentTimeMillis()));
+				this.saveDocument(doc);
+				//return the entry
+				return new RiakCacheEntry(doc); 
 			}	
 
 		}catch(IOException e){
@@ -305,7 +310,7 @@ public class RiakCache implements Cache {
 		doc.setCreated(now);
 		doc.setLifeSpan(life);
 		doc.setIdleItem(idle);
-		doc.setLastModified(now);
+		doc.setLastHit(now);
 		doc.setExpires(now + life);
 		doc.setValue(val);
 		try{
@@ -431,6 +436,12 @@ public class RiakCache implements Cache {
 		return result;
 	}
 	
+	/**
+	 * Flush the invalid docs for expires and timeidle
+	 */
+	public void flushInvalid() {
+		
+	}
 	
 	/**
 	 * Private method to persist a RiakDocument instance
@@ -454,4 +465,5 @@ public class RiakCache implements Cache {
 		}
 	}
 
+	
 }
